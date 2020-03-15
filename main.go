@@ -18,6 +18,7 @@ func main() {
 	case "run":
 		set := flag.NewFlagSet("", flag.ContinueOnError)
 		path := set.String("p", ".", "")
+		recursive := set.Bool("r", false, "")
 		set.SetOutput(ioutil.Discard)
 
 		args := os.Args[2:]
@@ -25,7 +26,7 @@ func main() {
 			failWithUsage()
 		}
 
-		if err := run(*path); err != nil {
+		if err := run(*path, *recursive); err != nil {
 			fprintf(os.Stderr, "failed running: %s\n", err)
 			os.Exit(1)
 		}

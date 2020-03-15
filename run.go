@@ -25,6 +25,21 @@ func appendValues(idx index.Index, values []*doc.Value) {
 	}
 }
 
+func arrangeDirectory(dir, filename string) error {
+	set := token.NewFileSet()
+	packages, err := parser.ParseDir(set, dir, nil, parser.ParseComments)
+	if err != nil {
+		return fmt.Errorf("failed parsing: %w", err)
+	}
+
+	for _, pkg := range packages {
+		if err := arrangePackage(pkg, set, filename); err != nil {
+			return fmt.Errorf("failed arranging package %q: %w", pkg.Name, err)
+		}
+	}
+	return nil
+}
+
 func arrangeFile(file *ast.File, idx index.Index, path string, set *token.FileSet) error {
 	indexes := idx.Sort(file.Decls)
 	mp := ast.NewCommentMap(set, file, file.Comments)
@@ -108,21 +123,19 @@ func offset(pos token.Pos, set *token.FileSet) int {
 	return position.Offset
 }
 
-func run(path string) error {
-	set := token.NewFileSet()
+func run(path string, recursive bool) error {
 	dir, filename, err := split(path)
 	if err != nil {
 		return fmt.Errorf("failed splitting path: %w", err)
 	}
 
-	packages, err := parser.ParseDir(set, dir, nil, parser.ParseComments)
-	if err != nil {
-		return fmt.Errorf("failed parsing: %w", err)
-	}
-
-	for _, pkg := range packages {
-		if err := arrangePackage(pkg, set, filename); err != nil {
-			return fmt.Errorf("failed arranging package %q: %w", pkg.Name, err)
+	if filename == "" && recursive {
+		if err := filepath.Walk(dir, walk); err != nil {
+			return fmt.Errorf("failed walking: %w", err)
+		}
+	} else {
+		if err := arrangeDirectory(dir, filename); err != nil {
+			return fmt.Errorf("failed arranging directory: %w", err)
 		}
 	}
 	return nil
@@ -141,4 +154,16 @@ func split(path string) (string, string, error) {
 		filename := filepath.Base(path)
 		return dir, filename, nil
 	}
+}
+
+func walk(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return fmt.Errorf("failed walking: %w", err)
+	}
+	if info.IsDir() {
+		if err := arrangeDirectory(path, ""); err != nil {
+			return fmt.Errorf("failed arranging directory: %w", err)
+		}
+	}
+	return nil
 }
