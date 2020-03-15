@@ -22,7 +22,10 @@ func writeUsage(writer io.Writer) {
 
 Usage:
   %[1]s help
-  %[1]s run
+  %[1]s run [-p=<path>]
+
+Options:
+  -p=<path> Path of file or directory to arrange [default: .]
 `
 	name := os.Args[0]
 	fprintf(writer, usage, name)

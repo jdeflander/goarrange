@@ -1,6 +1,10 @@
 package main
 
-import "os"
+import (
+	"flag"
+	"io/ioutil"
+	"os"
+)
 
 func main() {
 	if len(os.Args) < 2 {
@@ -12,7 +16,16 @@ func main() {
 		help()
 
 	case "run":
-		if err := run(); err != nil {
+		set := flag.NewFlagSet("", flag.ContinueOnError)
+		path := set.String("p", ".", "")
+		set.SetOutput(ioutil.Discard)
+
+		args := os.Args[2:]
+		if err := set.Parse(args); err != nil {
+			failWithUsage()
+		}
+
+		if err := run(*path); err != nil {
 			fprintf(os.Stderr, "failed running: %s\n", err)
 			os.Exit(1)
 		}
