@@ -22,9 +22,10 @@ func writeUsage(writer io.Writer) {
 
 Usage:
   %[1]s help
-  %[1]s run [-p=<path>] [-r]
+  %[1]s run [-d] [-p=<path>] [-r]
 
 Options:
+  -d        Dry-run listing unarranged files
   -p=<path> Path of file or directory to arrange [default: .]
   -r        Walk directories recursively
 `

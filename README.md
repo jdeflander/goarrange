@@ -18,9 +18,10 @@ Automatic arrangement of Go source code
 
 Usage:
   goarrange help
-  goarrange run [-p=<path>] [-r]
+  goarrange run [-d] [-p=<path>] [-r]
 
 Options:
+  -d        Dry-run listing unarranged files
   -p=<path> Path of file or directory to arrange [default: .]
   -r        Walk directories recursively
 ```
