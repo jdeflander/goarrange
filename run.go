@@ -51,13 +51,11 @@ func arrangeFile(file *ast.File, idx index.Index, path string, set *token.FileSe
 	i := 0
 
 	for dstIndex, srcIndex := range indexes {
-		dstDecl := file.Decls[dstIndex]
-		dstStart, dstEnd := bounds(dstDecl, mp, set)
+		dstStart, dstEnd := bounds(file.Decls, dstIndex, mp, set)
 		prefix := src[i:dstStart]
 		buffer.Write(prefix)
 
-		srcDecl := file.Decls[srcIndex]
-		srcStart, srcEnd := bounds(srcDecl, mp, set)
+		srcStart, srcEnd := bounds(file.Decls, srcIndex, mp, set)
 		infix := src[srcStart:srcEnd]
 		buffer.Write(infix)
 
@@ -104,10 +102,12 @@ func arrangePackage(pkg *ast.Package, set *token.FileSet, filename string, dryRu
 	return nil
 }
 
-func bounds(decl ast.Decl, mp ast.CommentMap, set *token.FileSet) (int, int) {
+func bounds(decls []ast.Decl, index int, mp ast.CommentMap, set *token.FileSet) (int, int) {
+	decl := decls[index]
+	minStart := minStart(decls, index, mp)
 	start := decl.Pos()
 	for _, group := range mp.Filter(decl).Comments() {
-		if group.Pos() < start {
+		if group.Pos() > minStart && group.Pos() < start {
 			start = group.Pos()
 		}
 	}
@@ -120,6 +120,25 @@ func bounds(decl ast.Decl, mp ast.CommentMap, set *token.FileSet) (int, int) {
 	}
 
 	return offset(start, set), offset(end, set)
+}
+
+func minStart(decls []ast.Decl, index int, mp ast.CommentMap) token.Pos {
+	if index == 0 {
+		return token.NoPos
+	} else {
+		decl := decls[index-1]
+		return end(decl, mp)
+	}
+}
+
+func end(decl ast.Decl, mp ast.CommentMap) token.Pos {
+	end := decl.End()
+	for _, group := range mp.Filter(decl).Comments() {
+		if group.End() > end {
+			end = group.End()
+		}
+	}
+	return end
 }
 
 func offset(pos token.Pos, set *token.FileSet) int {
