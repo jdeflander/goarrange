@@ -18,7 +18,23 @@ func (i Index) Append(decl ast.Decl) {
 	i.decls[decl] = len(i.decls)
 }
 
+func (i Index) IsSorted(decls []ast.Decl) bool {
+	records := i.records(decls)
+	return sort.IsSorted(records)
+}
+
 func (i Index) Sort(decls []ast.Decl) []int {
+	records := i.records(decls)
+	sort.Stable(records)
+
+	var indexes []int
+	for _, record := range records {
+		indexes = append(indexes, record.index)
+	}
+	return indexes
+}
+
+func (i Index) records(decls []ast.Decl) records {
 	var records records
 	for index, decl := range decls {
 		key, ok := i.decls[decl]
@@ -29,11 +45,5 @@ func (i Index) Sort(decls []ast.Decl) []int {
 		}
 		records = append(records, record)
 	}
-	sort.Stable(records)
-
-	var indexes []int
-	for _, record := range records {
-		indexes = append(indexes, record.index)
-	}
-	return indexes
+	return records
 }

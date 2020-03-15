@@ -25,7 +25,7 @@ func appendValues(idx index.Index, values []*doc.Value) {
 	}
 }
 
-func arrangeDirectory(dir, filename string) error {
+func arrangeDirectory(dir, filename string, dryRun bool) error {
 	set := token.NewFileSet()
 	packages, err := parser.ParseDir(set, dir, nil, parser.ParseComments)
 	if err != nil {
@@ -33,7 +33,7 @@ func arrangeDirectory(dir, filename string) error {
 	}
 
 	for _, pkg := range packages {
-		if err := arrangePackage(pkg, set, filename); err != nil {
+		if err := arrangePackage(pkg, set, filename, dryRun); err != nil {
 			return fmt.Errorf("failed arranging package %q: %w", pkg.Name, err)
 		}
 	}
@@ -74,7 +74,7 @@ func arrangeFile(file *ast.File, idx index.Index, path string, set *token.FileSe
 	return nil
 }
 
-func arrangePackage(pkg *ast.Package, set *token.FileSet, filename string) error {
+func arrangePackage(pkg *ast.Package, set *token.FileSet, filename string, dryRun bool) error {
 	docs := doc.New(pkg, "", doc.AllDecls|doc.PreserveAST)
 	idx := index.New()
 
@@ -92,7 +92,11 @@ func arrangePackage(pkg *ast.Package, set *token.FileSet, filename string) error
 
 	for path, file := range pkg.Files {
 		if filename == "" || filepath.Base(path) == filename {
-			if err := arrangeFile(file, idx, path, set); err != nil {
+			if dryRun {
+				if !idx.IsSorted(file.Decls) {
+					fmt.Println(path)
+				}
+			} else if err := arrangeFile(file, idx, path, set); err != nil {
 				return fmt.Errorf("failed arranging file %q: %w", path, err)
 			}
 		}
@@ -123,18 +127,29 @@ func offset(pos token.Pos, set *token.FileSet) int {
 	return position.Offset
 }
 
-func run(path string, recursive bool) error {
+func run(path string, recursive bool, dryRun bool) error {
 	dir, filename, err := split(path)
 	if err != nil {
 		return fmt.Errorf("failed splitting path: %w", err)
 	}
 
 	if filename == "" && recursive {
+		walk := func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return fmt.Errorf("failed walking: %w", err)
+			}
+			if info.IsDir() {
+				if err := arrangeDirectory(path, "", dryRun); err != nil {
+					return fmt.Errorf("failed arranging directory: %w", err)
+				}
+			}
+			return nil
+		}
 		if err := filepath.Walk(dir, walk); err != nil {
 			return fmt.Errorf("failed walking: %w", err)
 		}
 	} else {
-		if err := arrangeDirectory(dir, filename); err != nil {
+		if err := arrangeDirectory(dir, filename, dryRun); err != nil {
 			return fmt.Errorf("failed arranging directory: %w", err)
 		}
 	}
@@ -154,16 +169,4 @@ func split(path string) (string, string, error) {
 		filename := filepath.Base(path)
 		return dir, filename, nil
 	}
-}
-
-func walk(path string, info os.FileInfo, err error) error {
-	if err != nil {
-		return fmt.Errorf("failed walking: %w", err)
-	}
-	if info.IsDir() {
-		if err := arrangeDirectory(path, ""); err != nil {
-			return fmt.Errorf("failed arranging directory: %w", err)
-		}
-	}
-	return nil
 }
