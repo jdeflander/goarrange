@@ -18,5 +18,8 @@ Automatic arrangement of Go source code
 
 Usage:
   goarrange help
-  goarrange run
+  goarrange run [-p=<path>]
+
+Options:
+  -p=<path> Path of file or directory to arrange [default: .]
 ```
