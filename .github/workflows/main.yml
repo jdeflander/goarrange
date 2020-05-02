@@ -1,0 +1,34 @@
+jobs:
+  checkout:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/upload-artifact@v2
+        with:
+          name: src
+          path: .
+  lint:
+    needs: checkout
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: src
+      - run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s v1.26.0
+      - run: bin/golangci-lint run
+  test:
+    needs: checkout
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: src
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "1.13"
+      - run: go test -v ./...
+name: main
+on:
+  pull_request:
+    branches:
+      - master
