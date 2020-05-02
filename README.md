@@ -2,14 +2,13 @@
 
 Ever wanted a consistent ordering for declarations in your Go code? With `goarrange`, you can automatically follow the
 conventions of GoDoc! Constants come first, followed by variables, functions and types with their associated constants,
-variables, functions and methods. Within each of these categories, exported declarations precede unexported ones.
+variables, functions and methods. Within each of these categories, exported declarations precede unexported ones. Lastly
+`goarrange` enforces an alphabetic ordering.
 
 ## Installation
 
-Installing `goarrange` requires [Go](https://golang.org) 1.13+.
-
 ```sh
-$ go install github.com/jdeflander/goarrange
+$ go get github.com/jdeflander/goarrange
 ```
 
 ## Usage
