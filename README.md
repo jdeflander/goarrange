@@ -14,7 +14,7 @@ $ go get github.com/jdeflander/goarrange
 ### v1.17 and later
 
 ```sh
-$ go install github.com/jdeflander/goarrange
+$ go install github.com/jdeflander/goarrange@v1.0.0
 ```
 
 ## Usage
