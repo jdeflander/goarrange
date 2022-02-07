@@ -11,6 +11,12 @@ variables, functions and methods. Within each of these categories, exported decl
 $ go get github.com/jdeflander/goarrange
 ```
 
+### v1.17 and later
+
+```sh
+$ go install github.com/jdeflander/goarrange
+```
+
 ## Usage
 
 ```sh
