@@ -8,7 +8,7 @@ variables, functions and methods. Within each of these categories, exported decl
 ## Installation
 
 ```sh
-$ go get github.com/jdeflander/goarrange
+go install github.com/jdeflander/goarrange@v1.0.0
 ```
 
 ## Usage
