@@ -10,13 +10,13 @@ variables, functions and methods. Within each of these categories, exported decl
 ### go 1.16+
 
 ```sh
-go install github.com/jdeflander/goarrange@v1.0.0
+$ go install github.com/jdeflander/goarrange@v1.0
 ```
 
 ### pre go 1.16
 
 ```sh
-go get github.com/jdeflander/goarrange
+$ go get github.com/jdeflander/goarrange
 ```
 
 ## Usage
